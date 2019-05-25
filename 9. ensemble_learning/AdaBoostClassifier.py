@@ -4,6 +4,7 @@ from copy import deepcopy
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import roc_auc_score
 import pandas as pd
+from sklearn.ensemble import AdaBoostClassifier
 
 
 class MyAdaBoostClassifier(BaseEstimator, ClassifierMixin):
@@ -26,10 +27,15 @@ class MyAdaBoostClassifier(BaseEstimator, ClassifierMixin):
             sample_weight, estimator_weight, estimator_error, estimator = self._boost(
                 X, y, sample_weight
             )
+
+            if estimator_error > 0.5:
+                break
+
             self.estimators_.append(estimator)
             self.estimator_weights_[iboost] = estimator_weight
             self.estimator_errors_[iboost] = estimator_error
-            if estimator_error > 0.5 or estimator_error <= 0:
+
+            if estimator_error <= 0:
                 break
         return self
 
@@ -40,8 +46,13 @@ class MyAdaBoostClassifier(BaseEstimator, ClassifierMixin):
         y_pred = estimator.predict(X)
         estimator_error = np.mean(y_pred != y)
 
-        if estimator_error > 0.5 or estimator_error <= 0:
+        # estimator is perfect
+        if estimator_error <= 0:
             return 0, 1, estimator_error, estimator
+
+        # estimator is weak
+        if estimator_error > 0.5:
+            return 0, 0, estimator_error, estimator
 
         estimator_weight = 1 / 2 * np.log((1 - estimator_error) / estimator_error)
 
