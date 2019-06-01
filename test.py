@@ -1,5 +1,16 @@
+# encoding=utf8
 import numpy as np
-from statistics import mean, stdev
+import random
 
-a = [-3, 4]
-print(np.linalg.norm(a))
+a = np.array([2, 1, 3, 4, 5, 6, 10])
+print(a[:-3-1:-1])
+
+
+
+
+
+
+
+
+
+
