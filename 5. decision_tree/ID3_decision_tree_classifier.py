@@ -104,7 +104,7 @@ class DecisionTree(object):
             :return:
             """
             c = Counter(label)
-            return sorted(c.items(), key=lambda x: x[1], reverse=True)[0][0]
+            return max(c.items(), key=lambda x: x[1])[0]
 
         if len(set(label)) == 1:
             return label[0]
@@ -151,6 +151,41 @@ class DecisionTree(object):
         value = feature[test_feature]
         return self.predict_recursive(feature, tree[test_feature][value])
 
+        def visualize(self, feature_names: list, output_name: str):
+        dot = Digraph(comment='Decision Tree')
+        idx = '0'
+
+    def draw_recursive(node, parent_idx, edge_val):
+        """
+        递归地绘制该节点与其子节点
+        :param node: 需要绘制的节点，可能是dict或str
+        :param parent_idx: 父节点的id str
+        :param edge_val: 连接两个节点的属性值
+        :return:
+        """
+        nonlocal idx
+        # 更新节点id
+        idx = str(int(idx) + 1)
+        curr_idx = idx
+        if type(node) is not dict:
+            # 如果绘制到叶节点
+            dot.node(curr_idx, node)
+            dot.edge(parent_idx, curr_idx, label=edge_val)
+            return
+        # 获得用于判断的属性名称
+        keys = list(node.keys())
+        keys.remove('mode_label')
+        test_feature = keys[0]
+        dot.node(curr_idx, feature_names[test_feature], shape='box')
+        # 将该节点与父节点相连
+        if parent_idx:
+            dot.edge(parent_idx, curr_idx, label=edge_val)
+        # 递归连接子节点
+        for val, next_node in node[test_feature].items():
+            draw_recursive(next_node, curr_idx, val)
+
+        draw_recursive(self.tree, None, None)
+        dot.render(output_name, format='svg')
 
 feature = np.array([
     [1, 0, 1],
